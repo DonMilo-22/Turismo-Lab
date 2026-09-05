@@ -22,7 +22,7 @@
   const $$ = (s, scope = document) => [...scope.querySelectorAll(s)];
   const randomItem = arr => arr[Math.floor(Math.random() * arr.length)];
   const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
-  const esc = value => String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const esc = value => String(value).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
   const normalize = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 
   function navigate(viewId) {
@@ -405,7 +405,7 @@
       if (g.matched.size === g.cards.length) finishMemoryGame();
     } else {
       g.resolving = true;
-      setTimeout(() => { g.flipped = []; g.resolving = false; renderMemoryCards(); }, 3000);
+      setTimeout(() => { g.flipped = []; g.resolving = false; renderMemoryCards(); }, 2000);
     }
   }
 
@@ -498,9 +498,9 @@
         <div class="result-percent">${overall}%</div>
         <p>${correct} respuestas correctas de ${total}.</p>
         <div class="section-results">${state.exam.sectionResults.map((r, i) => {
-          const pct = Math.round((r.correct / r.total) * 100);
-          return `<details class="result-section"><summary><span><strong>Sección ${i + 1}: ${esc(r.title)}</strong><small>${r.correct} / ${r.total} · ${pct}%</small></span><span>⌄</span></summary><div class="review-list">${r.answers.map((a, idx) => `<article class="review-item ${a.correct ? 'is-correct' : 'is-wrong'}"><div><span class="review-number">${idx + 1}</span><div><strong>${esc(a.question)}</strong><p>Tu respuesta: <span>${esc(a.selected)}</span>${a.correct ? '' : `<br>Respuesta correcta: <span class="correct-answer">${esc(a.correctAnswer)}</span>`}</p></div></div><span>${a.correct ? '✓' : '✕'}</span></article>`).join('')}</div></details>`;
-        }).join('')}</div>
+      const pct = Math.round((r.correct / r.total) * 100);
+      return `<details class="result-section"><summary><span><strong>Sección ${i + 1}: ${esc(r.title)}</strong><small>${r.correct} / ${r.total} · ${pct}%</small></span><span>⌄</span></summary><div class="review-list">${r.answers.map((a, idx) => `<article class="review-item ${a.correct ? 'is-correct' : 'is-wrong'}"><div><span class="review-number">${idx + 1}</span><div><strong>${esc(a.question)}</strong><p>Tu respuesta: <span>${esc(a.selected)}</span>${a.correct ? '' : `<br>Respuesta correcta: <span class="correct-answer">${esc(a.correctAnswer)}</span>`}</p></div></div><span>${a.correct ? '✓' : '✕'}</span></article>`).join('')}</div></details>`;
+    }).join('')}</div>
         <button id="newExam" class="btn btn-primary" type="button">Nuevo examen</button>
       </div>`;
   }
