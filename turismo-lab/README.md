@@ -1,46 +1,39 @@
-# Turismo Lab
+# Turismo Lab v2
 
-Mini plataforma educativa estática para estudiantes de turismo.
+Web estática educativa para estudiantes de Turismo.
 
-## Tecnología
-
+## Stack
 - HTML5
 - CSS3
 - JavaScript Vanilla
-- Web Speech API (`speechSynthesis`) para pronunciación
-- Sin backend, base de datos, cuentas ni APIs externas de datos
-- Compatible con despliegue estático en Vercel
+- Speech Synthesis API del navegador
+- Compatible con Vercel como sitio estático
+
+## Contenido
+La información de esta versión está basada en el material proporcionado para el proyecto: abecedario fonético aeronáutico, claves de ciudades, terminología hotelera y abreviaturas hoteleras.
 
 ## Estructura
-
 ```text
 turismo-lab/
 ├── index.html
+├── README.md
 ├── css/
 │   └── style.css
-├── js/
-│   ├── data.js
-│   └── main.js
-└── README.md
+└── js/
+    ├── data.js
+    └── main.js
 ```
 
 ## Ejecutar localmente
-
-Puedes abrir `index.html` directamente en el navegador. Para una experiencia más cercana a producción, también puedes usar un servidor local sencillo:
-
 ```bash
 python3 -m http.server 8000
 ```
+Luego abre `http://localhost:8000`.
 
-Luego entra a `http://localhost:8000`.
+## Deploy en Vercel
+Sube esta carpeta a GitHub y crea un nuevo proyecto en Vercel usando el repositorio. No se requiere build command ni backend.
 
-## Desplegar en Vercel
-
-1. Sube la carpeta a un repositorio de GitHub.
-2. Importa el repositorio en Vercel.
-3. No necesitas configurar un framework.
-4. Puedes dejar el build command vacío y usar la carpeta raíz como directorio del proyecto.
-
-## Nota sobre el contenido
-
-Los términos mostrados en `js/data.js` siguen el material de estudio proporcionado para Turismo Lab. Si el material de clase cambia, actualiza ese archivo sin necesidad de tocar la interfaz.
+## Audio
+- Abecedario y términos hoteleros en inglés usan una voz `en-US` cuando el dispositivo dispone de ella.
+- Definiciones y contenidos en español usan `es-MX` cuando está disponible.
+- Las voces disponibles dependen del sistema operativo y del navegador.

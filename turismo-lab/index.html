@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0c1222" />
-  <meta name="description" content="Turismo Lab — aprende terminología aeronáutica y hotelera de forma sencilla, visual e interactiva." />
-  <title>Turismo Lab · Aprende, practica, explora</title>
+  <meta name="theme-color" content="#0a1020" />
+  <meta name="description" content="Turismo Lab — herramienta interactiva para estudiar abecedario aeronáutico, claves de ciudades y terminología hotelera." />
+  <title>Turismo Lab · Aprende, practica y explora</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -29,12 +29,10 @@
       <button class="nav-link active" data-nav="inicio">Inicio</button>
       <button class="nav-link" data-nav="aero">✈ Aeronáutico</button>
       <button class="nav-link" data-nav="hotel">🏨 Hotelería</button>
-      <button class="nav-link" data-nav="practica">🎮 Práctica</button>
+      <button class="nav-link" data-nav="examen">📝 Examen</button>
     </nav>
 
-    <button id="soundToggle" class="icon-btn" type="button" aria-label="Activar o desactivar sonidos" title="Sonido">
-      🔊
-    </button>
+    <button id="soundToggle" class="icon-btn" type="button" aria-label="Activar o desactivar sonido" title="Sonido">🔊</button>
   </header>
 
   <main class="app-shell">
@@ -43,7 +41,7 @@
         <div class="hero-copy">
           <span class="eyebrow">PLATAFORMA DE ESTUDIO</span>
           <h1>Aprende turismo de una forma más <span class="gradient-text">simple y divertida.</span></h1>
-          <p>Una pequeña herramienta para estudiar el abecedario aeronáutico, claves de ciudades y terminología hotelera sin cuentas, sin complicaciones y desde cualquier dispositivo.</p>
+          <p>Estudia el material que necesitas, escucha los términos, practica por tema y realiza un examen completo sin cuentas, sin progreso y sin complicaciones.</p>
           <div class="hero-actions">
             <button class="btn btn-primary" data-nav="aero">Empezar con aeronáutico</button>
             <button class="btn btn-secondary" data-nav="hotel">Explorar hotelería</button>
@@ -72,8 +70,8 @@
           <div class="feature-icon blue">✈</div>
           <div>
             <span class="card-kicker">MÓDULO 01</span>
-            <h3>Abecedario aeronáutico</h3>
-            <p>Aprende las 26 letras, escucha su pronunciación, descifra palabras y practica con retos.</p>
+            <h3>Aeronáutico</h3>
+            <p>Aprende el abecedario fonético y las claves de ciudades, con audio, convertidor y juegos separados por tema.</p>
             <span class="text-link">Ir al módulo →</span>
           </div>
         </article>
@@ -82,26 +80,26 @@
           <div class="feature-icon violet">🏨</div>
           <div>
             <span class="card-kicker">MÓDULO 02</span>
-            <h3>Terminología hotelera</h3>
-            <p>Explora términos, abreviaturas y situaciones comunes del sector hotelero.</p>
+            <h3>Hotelería</h3>
+            <p>Consulta terminología y abreviaturas con definiciones claras y practica cada grupo por separado.</p>
             <span class="text-link">Ir al módulo →</span>
           </div>
         </article>
 
-        <article class="feature-card glass clickable-card" data-nav="practica">
-          <div class="feature-icon mint">🎮</div>
+        <article class="feature-card glass clickable-card" data-nav="examen">
+          <div class="feature-icon mint">📝</div>
           <div>
             <span class="card-kicker">MÓDULO 03</span>
-            <h3>Centro de práctica</h3>
-            <p>Combina distintos ejercicios para comprobar qué tanto recuerdas de forma rápida.</p>
-            <span class="text-link">Empezar a practicar →</span>
+            <h3>Examen</h3>
+            <p>Selecciona los temas que quieras evaluar, responde por secciones y revisa tus aciertos y errores al final.</p>
+            <span class="text-link">Preparar examen →</span>
           </div>
         </article>
       </div>
 
       <div class="mini-note glass">
         <span>💡</span>
-        <p><strong>Sin cuentas. Sin progreso. Sin presión.</strong> Turismo Lab está pensado para entrar, estudiar lo necesario, practicar y salir.</p>
+        <p><strong>Sin cuentas. Sin progreso. Sin presión.</strong> Turismo Lab está pensado para entrar, estudiar, practicar y salir.</p>
       </div>
     </section>
 
@@ -110,19 +108,17 @@
         <div>
           <button class="back-link" data-nav="inicio">← Volver al inicio</button>
           <span class="eyebrow">MÓDULO AERONÁUTICO</span>
-          <h2>Abecedario &amp; claves</h2>
-          <p>Aprende los códigos del material de estudio y ponlos en práctica con audio.</p>
+          <h2>Aprende y practica por tema</h2>
+          <p>Elige entre el abecedario fonético y las claves de ciudades. Los juegos de cada tema nunca se mezclan con otros.</p>
         </div>
-        <div class="stat-chip glass"><strong id="aeroCardIndex">1</strong><span>/ 26 letras</span></div>
       </div>
 
       <div class="tab-row">
-        <button class="tab-btn active" data-aero-tab="study">📚 Estudiar</button>
-        <button class="tab-btn" data-aero-tab="converter">🔄 Convertidor</button>
+        <button class="tab-btn active" data-aero-tab="alphabet">📚 Abecedario</button>
         <button class="tab-btn" data-aero-tab="cities">🗺 Claves de ciudades</button>
       </div>
 
-      <div id="aero-study" class="aero-panel">
+      <div id="aero-alphabet" class="aero-panel">
         <div class="study-layout">
           <div class="flashcard glass">
             <div class="flashcard-top"><span id="flashcardLetterMini">A</span><span id="flashcardCount">1 / 26</span></div>
@@ -140,41 +136,34 @@
             <div class="glass side-card">
               <div class="side-card-title"><span>🧠</span><div><strong>Modo estudio</strong><small>Recorre las letras a tu ritmo</small></div></div>
               <ul class="clean-list">
-                <li>Escucha cada término.</li>
-                <li>Intenta decirlo antes del audio.</li>
-                <li>Usa el convertidor para practicar palabras.</li>
+                <li>Escucha el término en inglés solo cuando lo necesites.</li>
+                <li>Intenta recordarlo antes de pulsar el audio.</li>
+                <li>Usa el convertidor para transformar palabras completas.</li>
               </ul>
             </div>
-            <button class="glass mini-action" data-practice-mode="listen">🎧 Ir a reto de escucha <span>→</span></button>
-            <button class="glass mini-action" data-practice-mode="decode">🧩 Ir a descifrar códigos <span>→</span></button>
           </aside>
         </div>
 
         <div class="section-heading compact">
-          <div>
-            <span class="eyebrow">CONSULTA RÁPIDA</span>
-            <h3>Las 26 letras</h3>
-          </div>
+          <div><span class="eyebrow">CONSULTA RÁPIDA</span><h3>Las 26 letras</h3></div>
         </div>
         <div id="alphabetGrid" class="alphabet-grid"></div>
-      </div>
 
-      <div id="aero-converter" class="aero-panel hidden">
-        <div class="converter-layout">
+        <div class="converter-layout converter-section">
           <div class="glass converter-card">
-            <span class="eyebrow">CONVERTIDOR</span>
-            <h3>Escribe una palabra</h3>
-            <p>Turismo Lab convertirá cada letra usando el abecedario del material de estudio.</p>
+            <span class="eyebrow">CONVERTIDOR AERONÁUTICO</span>
+            <h3>Convierte una palabra</h3>
+            <p>Escribe una palabra y Turismo Lab la transformará letra por letra usando el abecedario del material.</p>
             <label class="field-label" for="converterInput">Palabra</label>
             <div class="input-row">
               <input id="converterInput" class="text-input" type="text" maxlength="40" placeholder="Ej. HOTEL" autocomplete="off" />
               <button id="convertBtn" class="btn btn-primary" type="button">Convertir</button>
             </div>
             <div class="speed-row">
-              <span>Velocidad de audio</span>
-              <button class="speed-btn" data-rate="0.75">0.75×</button>
-              <button class="speed-btn active" data-rate="1">1×</button>
-              <button class="speed-btn" data-rate="1.25">1.25×</button>
+              <span>Velocidad</span>
+              <button class="speed-btn" data-rate="0.75" type="button">0.75×</button>
+              <button class="speed-btn active" data-rate="1" type="button">1×</button>
+              <button class="speed-btn" data-rate="1.25" type="button">1.25×</button>
             </div>
           </div>
           <div class="glass converter-result">
@@ -182,6 +171,18 @@
             <div id="converterList" class="converter-list empty-state"><span>✦</span><p>Aquí aparecerá la conversión letra por letra.</p></div>
           </div>
         </div>
+
+        <section class="games-section">
+          <div class="section-heading compact">
+            <div><span class="eyebrow">JUEGOS DEL TEMA</span><h3>Practica el abecedario</h3><p>Estos juegos usan únicamente las 26 letras y sus códigos fonéticos.</p></div>
+          </div>
+          <div class="game-grid">
+            <button class="game-card glass" data-game-topic="alphabet" data-game="questions" type="button"><span class="game-icon">🧠</span><span class="card-kicker">JUEGO 01</span><h4>Preguntas</h4><p>¿Qué término representa esta letra? ¿Qué letra corresponde a este término?</p></button>
+            <button class="game-card glass" data-game-topic="alphabet" data-game="memory" type="button"><span class="game-icon">🃏</span><span class="card-kicker">JUEGO 02</span><h4>Memorama</h4><p>Encuentra las parejas letra ↔ término en una cuadrícula de 20 tarjetas.</p></button>
+            <button class="game-card glass" data-game-topic="alphabet" data-game="decode" type="button"><span class="game-icon">🧩</span><span class="card-kicker">JUEGO 03</span><h4>Descifra el código</h4><p>Recibe una secuencia de términos y escribe la palabra correcta.</p></button>
+            <button class="game-card glass" data-game-topic="alphabet" data-game="encrypt" type="button"><span class="game-icon">🔐</span><span class="card-kicker">JUEGO 04</span><h4>Encripta</h4><p>Lee una palabra y elige cuál de cuatro secuencias la representa.</p></button>
+          </div>
+        </section>
       </div>
 
       <div id="aero-cities" class="aero-panel hidden">
@@ -192,6 +193,18 @@
           </div>
           <div id="citiesGrid" class="cities-grid"></div>
         </div>
+
+        <section class="games-section">
+          <div class="section-heading compact">
+            <div><span class="eyebrow">JUEGOS DEL TEMA</span><h3>Practica las claves de ciudades</h3><p>Las preguntas usan solamente claves y ciudades del material.</p></div>
+          </div>
+          <div class="game-grid">
+            <button class="game-card glass" data-game-topic="cities" data-game="questions" type="button"><span class="game-icon">🧠</span><span class="card-kicker">JUEGO 01</span><h4>Preguntas</h4><p>Relaciona una clave con su ciudad o una ciudad con su clave.</p></button>
+            <button class="game-card glass" data-game-topic="cities" data-game="memory" type="button"><span class="game-icon">🃏</span><span class="card-kicker">JUEGO 02</span><h4>Memorama</h4><p>Encuentra parejas clave ↔ ciudad en una cuadrícula reducida.</p></button>
+            <button class="game-card glass" data-game-topic="cities" data-game="decode" type="button"><span class="game-icon">🧩</span><span class="card-kicker">JUEGO 03</span><h4>Descifra la clave</h4><p>Observa el nombre de una ciudad y escribe la clave correcta.</p></button>
+            <button class="game-card glass" data-game-topic="cities" data-game="encrypt" type="button"><span class="game-icon">🔐</span><span class="card-kicker">JUEGO 04</span><h4>Elige la clave</h4><p>Selecciona entre cuatro opciones la clave de la ciudad mostrada.</p></button>
+          </div>
+        </section>
       </div>
     </section>
 
@@ -200,52 +213,85 @@
         <div>
           <button class="back-link" data-nav="inicio">← Volver al inicio</button>
           <span class="eyebrow">MÓDULO HOTELERÍA</span>
-          <h2>Habla como profesional</h2>
-          <p>Consulta términos, abreviaturas y ejemplos de uso para entender mejor el lenguaje del sector.</p>
+          <h2>Aprende el lenguaje del sector</h2>
+          <p>Terminología y abreviaturas están separados para que estudies exactamente el grupo que necesitas.</p>
         </div>
       </div>
 
-      <div class="hotel-controls glass">
-        <div class="hotel-search-wrap"><span>🔎</span><input id="hotelSearch" class="search-input" type="search" placeholder="Busca un término, abreviatura o definición..." /></div>
-        <div class="filter-row">
-          <button class="filter-btn active" data-hotel-filter="all">Todo</button>
-          <button class="filter-btn" data-hotel-filter="term">Terminología</button>
-          <button class="filter-btn" data-hotel-filter="abbr">Abreviaturas</button>
-        </div>
+      <div class="tab-row">
+        <button class="tab-btn active" data-hotel-tab="terms">📖 Terminología</button>
+        <button class="tab-btn" data-hotel-tab="abbr">🔠 Abreviaturas</button>
       </div>
 
-      <div id="hotelGrid" class="hotel-grid"></div>
-      <div id="hotelEmpty" class="glass empty-panel hidden"><span>🔎</span><h3>No encontramos nada</h3><p>Prueba con otra palabra.</p></div>
+      <div id="hotel-terms" class="hotel-panel">
+        <div class="hotel-controls glass">
+          <div class="hotel-search-wrap"><span>🔎</span><input id="hotelTermSearch" class="search-input" type="search" placeholder="Buscar término o definición..." /></div>
+        </div>
+        <div id="hotelTermsGrid" class="hotel-grid"></div>
+        <div id="hotelTermsEmpty" class="glass empty-panel hidden"><span>🔎</span><h3>No encontramos nada</h3><p>Prueba con otra palabra.</p></div>
+
+        <section class="games-section">
+          <div class="section-heading compact"><div><span class="eyebrow">JUEGOS DEL TEMA</span><h3>Practica la terminología</h3><p>Las preguntas se mantienen dentro de los términos en inglés y sus definiciones.</p></div></div>
+          <div class="game-grid">
+            <button class="game-card glass" data-game-topic="hotelTerms" data-game="questions" type="button"><span class="game-icon">🧠</span><span class="card-kicker">JUEGO 01</span><h4>Preguntas</h4><p>Relaciona el término en inglés con su significado o viceversa.</p></button>
+            <button class="game-card glass" data-game-topic="hotelTerms" data-game="memory" type="button"><span class="game-icon">🃏</span><span class="card-kicker">JUEGO 02</span><h4>Memorama</h4><p>Encuentra las parejas término ↔ definición.</p></button>
+            <button class="game-card glass" data-game-topic="hotelTerms" data-game="decode" type="button"><span class="game-icon">🧩</span><span class="card-kicker">JUEGO 03</span><h4>Escribe el término</h4><p>Lee una definición y escribe el término correcto en inglés.</p></button>
+          </div>
+        </section>
+      </div>
+
+      <div id="hotel-abbr" class="hotel-panel hidden">
+        <div class="hotel-controls glass">
+          <div class="hotel-search-wrap"><span>🔎</span><input id="hotelAbbrSearch" class="search-input" type="search" placeholder="Buscar abreviatura o significado..." /></div>
+        </div>
+        <div id="hotelAbbrGrid" class="hotel-grid"></div>
+        <div id="hotelAbbrEmpty" class="glass empty-panel hidden"><span>🔎</span><h3>No encontramos nada</h3><p>Prueba con otra abreviatura.</p></div>
+
+        <section class="games-section">
+          <div class="section-heading compact"><div><span class="eyebrow">JUEGOS DEL TEMA</span><h3>Practica las abreviaturas</h3><p>Aquí se practica la abreviatura y su significado; no se mezcla con terminología.</p></div></div>
+          <div class="game-grid">
+            <button class="game-card glass" data-game-topic="hotelAbbr" data-game="questions" type="button"><span class="game-icon">🧠</span><span class="card-kicker">JUEGO 01</span><h4>Preguntas</h4><p>Identifica la abreviatura correcta o su significado.</p></button>
+            <button class="game-card glass" data-game-topic="hotelAbbr" data-game="memory" type="button"><span class="game-icon">🃏</span><span class="card-kicker">JUEGO 02</span><h4>Memorama</h4><p>Encuentra parejas abreviatura ↔ significado.</p></button>
+            <button class="game-card glass" data-game-topic="hotelAbbr" data-game="decode" type="button"><span class="game-icon">🧩</span><span class="card-kicker">JUEGO 03</span><h4>Descifra la abreviatura</h4><p>Lee un significado y escribe la abreviatura correspondiente.</p></button>
+          </div>
+        </section>
+      </div>
     </section>
 
-    <section id="practica" class="view">
+    <section id="examen" class="view">
       <div class="page-header">
         <div>
           <button class="back-link" data-nav="inicio">← Volver al inicio</button>
-          <span class="eyebrow">CENTRO DE PRÁCTICA</span>
-          <h2>Aprende haciendo</h2>
-          <p>Elige un reto. Nada se guarda: solo practica y vuelve a intentarlo.</p>
+          <span class="eyebrow">EVALUACIÓN</span>
+          <h2>Examen por secciones</h2>
+          <p>Selecciona los temas que quieras evaluar. El examen avanza por secciones y no tiene límite de tiempo.</p>
         </div>
       </div>
 
-      <div class="practice-selector" id="practiceSelector">
-        <button class="practice-card glass" data-mode="mcq"><span class="practice-icon">🧠</span><span class="card-kicker">MODO 01</span><h3>Identifica el código</h3><p>Elige qué término corresponde a una letra o a una abreviatura.</p></button>
-        <button class="practice-card glass" data-mode="decode"><span class="practice-icon">🧩</span><span class="card-kicker">MODO 02</span><h3>Descifra el código</h3><p>Convierte una secuencia de términos aeronáuticos en una palabra.</p></button>
-        <button class="practice-card glass" data-mode="listen"><span class="practice-icon">🎧</span><span class="card-kicker">MODO 03</span><h3>Escucha y escribe</h3><p>Escucha el código y escribe la palabra que se forma.</p></button>
-        <button class="practice-card glass" data-mode="speed"><span class="practice-icon">⚡</span><span class="card-kicker">MODO 04</span><h3>Reto rápido</h3><p>Responde varias preguntas seguidas contra el reloj.</p></button>
+      <div id="examSetup" class="glass exam-setup">
+        <span class="eyebrow">ELIGE LOS TEMAS</span>
+        <h3>¿Qué quieres evaluar?</h3>
+        <p>Puedes seleccionar uno, varios o todos. Cada sección tendrá sus propias preguntas.</p>
+        <div class="exam-options">
+          <label class="exam-option"><input type="checkbox" value="alphabet" checked /><span><strong>✈️ Abecedario aeronáutico</strong><small>Letras y códigos fonéticos</small></span></label>
+          <label class="exam-option"><input type="checkbox" value="cities" checked /><span><strong>🗺️ Claves de ciudades</strong><small>Claves y nombres de ciudades</small></span></label>
+          <label class="exam-option"><input type="checkbox" value="hotelTerms" checked /><span><strong>🏨 Terminología hotelera</strong><small>Términos en inglés y definiciones</small></span></label>
+          <label class="exam-option"><input type="checkbox" value="hotelAbbr" checked /><span><strong>🔠 Abreviaturas hoteleras</strong><small>Abreviaturas y significados</small></span></label>
+        </div>
+        <button id="startExam" class="btn btn-primary">Comenzar examen →</button>
       </div>
 
-      <div id="practiceGame" class="glass game-shell hidden">
-        <div class="game-top"><button id="exitGame" class="back-link" type="button">← Elegir otro modo</button><div id="gameProgress" class="game-progress">1 / 10</div></div>
-        <div id="gameContent"></div>
+      <div id="examRunner" class="glass exam-runner hidden">
+        <div class="exam-top"><div><span class="eyebrow" id="examSectionLabel">SECCIÓN 1</span><h3 id="examSectionTitle">Abecedario aeronáutico</h3></div><div class="exam-progress" id="examProgress">1 / 8</div></div>
+        <div class="progress-track"><div id="examProgressBar" class="progress-fill"></div></div>
+        <div id="examQuestion"></div>
       </div>
+
+      <div id="examResult" class="hidden"></div>
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="footer-inner"><span>✈ Turismo Lab</span><span>Hecho para estudiar turismo de forma más sencilla.</span></div>
-  </footer>
-
+  <div id="modalRoot" class="modal-root hidden" aria-hidden="true"></div>
   <script src="js/data.js"></script>
   <script src="js/main.js"></script>
 </body>

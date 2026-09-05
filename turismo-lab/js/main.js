@@ -3,64 +3,86 @@
 
   const state = {
     currentView: 'inicio',
-    currentAeroTab: 'study',
+    aeroTab: 'alphabet',
+    hotelTab: 'terms',
     currentCard: 0,
     speechRate: 1,
     soundEnabled: true,
-    hotelFilter: 'all',
-    gameMode: null,
-    gameIndex: 0,
-    gameScore: 0,
-    gameQuestions: [],
-    gameTimer: null,
-    gameTime: 30,
-    speedTotal: 10,
-    shuffledCards: []
+    currentGame: null,
+    exam: {
+      sections: [],
+      sectionIndex: 0,
+      questionIndex: 0,
+      answers: [],
+      sectionResults: []
+    }
   };
 
-  const $ = (selector, scope = document) => scope.querySelector(selector);
-  const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
-
-  const normalizeText = (value = '') => value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '');
-
-  const randomItem = (array) => array[Math.floor(Math.random() * array.length)];
-  const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
+  const $ = (s, scope = document) => scope.querySelector(s);
+  const $$ = (s, scope = document) => [...scope.querySelectorAll(s)];
+  const randomItem = arr => arr[Math.floor(Math.random() * arr.length)];
+  const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
+  const esc = value => String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const normalize = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 
   function navigate(viewId) {
     const target = $(`#${viewId}`);
     if (!target) return;
-    $$('.view').forEach((view) => view.classList.remove('active-view'));
+    $$('.view').forEach(v => v.classList.remove('active-view'));
     target.classList.add('active-view');
-    $$('.nav-link').forEach((btn) => btn.classList.toggle('active', btn.dataset.nav === viewId));
+    $$('.nav-link').forEach(b => b.classList.toggle('active', b.dataset.nav === viewId));
     state.currentView = viewId;
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (viewId === 'aero') renderFlashcard();
-    if (viewId === 'hotel') renderHotelCards();
+    if (viewId === 'aero') { renderFlashcard(); renderCities(); }
+    if (viewId === 'hotel') { renderHotelTerms(); renderHotelAbbr(); }
+    if (viewId === 'examen') resetExamSetup();
   }
 
-  function speak(text, options = {}) {
-    if (!state.soundEnabled || !('speechSynthesis' in window) || !text) return;
+  function getSpeechVoice(lang) {
+    if (!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (lang.startsWith('en')) {
+      return voices.find(v => /^en-US/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang)) || null;
+    }
+    return voices.find(v => /^es-MX/i.test(v.lang)) || voices.find(v => /^es/i.test(v.lang)) || null;
+  }
+
+  function speak(text, { lang = 'es-MX', rate = state.speechRate, force = false } = {}) {
+    if ((!state.soundEnabled && !force) || !('speechSynthesis' in window) || !text) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = options.lang || 'es-MX';
-    utterance.rate = options.rate || state.speechRate;
+    utterance.lang = lang;
+    utterance.rate = rate;
     utterance.pitch = 1;
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find((voice) => /es-MX|es-MX|Spanish.*Mexico/i.test(`${voice.lang} ${voice.name}`))
-      || voices.find((voice) => /^es/i.test(voice.lang));
-    if (preferred) utterance.voice = preferred;
+    const voice = getSpeechVoice(lang);
+    if (voice) utterance.voice = voice;
     window.speechSynthesis.speak(utterance);
+  }
+
+  function speakEnglish(text) {
+    speak(text, { lang: 'en-US' });
+  }
+
+  function speakSequence(words, lang = 'en-US') {
+    if (!state.soundEnabled || !words.length) return;
+    window.speechSynthesis.cancel();
+    const voices = window.speechSynthesis.getVoices();
+    const voice = getSpeechVoice(lang);
+    let delay = 0;
+    words.forEach(word => {
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = lang;
+      utterance.rate = state.speechRate;
+      if (voice) utterance.voice = voice;
+      setTimeout(() => window.speechSynthesis.speak(utterance), delay);
+      delay += 650;
+    });
   }
 
   function renderFlashcard() {
     const [letter, word] = alphabet[state.currentCard];
-    $('#aeroCardIndex').textContent = state.currentCard + 1;
-    $('#flashcardCount').textContent = `${state.currentCard + 1} / ${alphabet.length}`;
     $('#flashcardLetterMini').textContent = letter;
+    $('#flashcardCount').textContent = `${state.currentCard + 1} / ${alphabet.length}`;
     $('#flashcardLetter').textContent = letter;
     $('#flashcardWord').textContent = word;
     $('#flashcardSpeak').textContent = `🔊 Escuchar “${word}”`;
@@ -69,396 +91,447 @@
   function renderAlphabetGrid() {
     $('#alphabetGrid').innerHTML = alphabet.map(([letter, word], index) => `
       <button class="alphabet-card glass ${index === state.currentCard ? 'selected' : ''}" data-card-index="${index}" type="button">
-        <span class="alphabet-letter">${letter}</span>
-        <span class="alphabet-word">${word}</span>
-        <span class="speaker-dot" title="Escuchar">🔊</span>
-      </button>
-    `).join('');
+        <span class="alphabet-letter">${esc(letter)}</span>
+        <span class="alphabet-word">${esc(word)}</span>
+      </button>`).join('');
   }
 
   function renderCities(search = '') {
-    const query = normalizeText(search);
-    const filtered = cities.filter(([code, city]) => normalizeText(`${code}${city}`).includes(query));
-    $('#citiesGrid').innerHTML = filtered.length
-      ? filtered.map(([code, city]) => `
-        <button class="city-card glass" data-city="${city}" data-code="${code}" type="button">
-          <span class="city-code">${code}</span>
-          <span class="city-name">${city}</span>
-          <span class="speaker-dot">🔊</span>
-        </button>
-      `).join('')
-      : `<div class="empty-panel glass"><span>🗺</span><h3>No encontramos esa clave</h3><p>Prueba con otra ciudad o código.</p></div>`;
+    const query = normalize(search);
+    const filtered = cities.filter(([code, city]) => normalize(`${code}${city}`).includes(query));
+    $('#citiesGrid').innerHTML = filtered.length ? filtered.map(([code, city]) => `
+      <div class="city-card glass">
+        <span class="city-code">${esc(code)}</span>
+        <span class="city-name">${esc(city)}</span>
+      </div>`).join('') : `<div class="empty-panel glass"><span>🗺</span><h3>No encontramos esa clave</h3><p>Prueba con otra ciudad o código.</p></div>`;
   }
 
   function renderConverter() {
     const input = $('#converterInput').value.trim();
     const result = $('#converterList');
-    const speakAll = $('#converterSpeakAll');
+    const button = $('#converterSpeakAll');
     if (!input) {
       $('#converterTitle').textContent = 'Escribe algo arriba';
       result.className = 'converter-list empty-state';
       result.innerHTML = '<span>✦</span><p>Aquí aparecerá la conversión letra por letra.</p>';
-      speakAll.disabled = true;
+      button.disabled = true;
+      button.dataset.text = '';
       return;
     }
-
-    const clean = input.toUpperCase();
-    const items = [...clean].filter((char) => /[A-ZÁÉÍÓÚÜÑ]/i.test(char)).map((char) => {
-      const normalized = normalizeText(char).charAt(0);
-      const entry = alphabet.find(([letter]) => letter === normalized);
-      return entry ? { letter: normalized, word: entry[1] } : null;
+    const items = [...input].map(ch => {
+      const key = normalize(ch).charAt(0);
+      return alphabet.find(([letter]) => letter === key) || null;
     }).filter(Boolean);
-
-    $('#converterTitle').textContent = clean;
+    $('#converterTitle').textContent = input.toUpperCase();
     result.className = 'converter-list';
-    result.innerHTML = items.map(({ letter, word }) => `
-      <button class="converter-item" data-word="${word}" type="button">
-        <span>${letter}</span>
-        <strong>${word}</strong>
-        <span class="speaker-dot">🔊</span>
-      </button>
-    `).join('');
-    speakAll.disabled = items.length === 0;
-    speakAll.dataset.text = items.map((item) => item.word).join(' — ');
+    result.innerHTML = items.map(([letter, word]) => `
+      <div class="converter-item"><span>${esc(letter)}</span><strong>${esc(word)}</strong></div>`).join('');
+    button.disabled = !items.length;
+    button.dataset.text = items.map(([, word]) => word).join(' — ');
   }
 
-  function getHotelCards() {
-    const terms = hotelTerms.map(([term, definition]) => ({ type: 'term', term, definition }));
-    const abbreviations = hotelAbbreviations.map(([abbr, code, definition]) => ({ type: 'abbr', term: abbr, code, definition }));
-    return [...terms, ...abbreviations];
-  }
-
-  function renderHotelCards() {
-    const query = normalizeText($('#hotelSearch')?.value || '');
-    const items = getHotelCards().filter((item) => {
-      const passesFilter = state.hotelFilter === 'all' || item.type === state.hotelFilter;
-      const searchable = normalizeText(`${item.term} ${item.code || ''} ${item.definition}`);
-      return passesFilter && (!query || searchable.includes(query));
-    });
-
-    $('#hotelGrid').innerHTML = items.map((item) => item.type === 'term' ? `
+  function renderHotelTerms() {
+    const query = normalize($('#hotelTermSearch')?.value || '');
+    const items = hotelTerms.filter(([term, definition]) => normalize(`${term} ${definition}`).includes(query));
+    $('#hotelTermsGrid').innerHTML = items.map(([term, definition]) => `
       <article class="hotel-card glass">
-        <div class="hotel-card-top"><span class="pill">TERMINOLOGÍA</span><button class="icon-btn small" data-speak="${item.term}" type="button" title="Escuchar">🔊</button></div>
-        <h3>${item.term}</h3>
-        <p class="definition">${item.definition}</p>
-        <div class="example-box"><span>📌</span><div><strong>Idea clave</strong><p>${item.definition.replace(/\.$/, '')}.</p></div></div>
-      </article>
-    ` : `
+        <div class="hotel-card-top"><span class="pill">TERMINOLOGÍA</span><button class="icon-btn small" data-speak-en="${esc(term)}" type="button" title="Escuchar en inglés">🔊</button></div>
+        <h3>${esc(term)}</h3>
+        <p class="definition">${esc(definition)}</p>
+        <div class="language-note"><span>EN</span><p>El término se pronuncia en inglés para conservar su uso profesional.</p></div>
+      </article>`).join('');
+    $('#hotelTermsEmpty').classList.toggle('hidden', items.length !== 0);
+  }
+
+  function renderHotelAbbr() {
+    const query = normalize($('#hotelAbbrSearch')?.value || '');
+    const items = hotelAbbreviations.filter(([abbr, definition]) => normalize(`${abbr} ${definition}`).includes(query));
+    $('#hotelAbbrGrid').innerHTML = items.map(([abbr, definition]) => `
       <article class="hotel-card glass">
-        <div class="hotel-card-top"><span class="pill accent">ABREVIATURA</span><button class="icon-btn small" data-speak="${item.code}" type="button" title="Escuchar">🔊</button></div>
-        <div class="abbr-line"><h3>${item.term}</h3><span>·</span><strong>${item.code}</strong></div>
-        <p class="definition">${item.definition}</p>
-        <div class="example-box"><span>🔤</span><div><strong>Desglose</strong><p>${item.code}</p></div></div>
-      </article>
-    `).join('');
-
-    $('#hotelEmpty').classList.toggle('hidden', items.length > 0);
+        <div class="hotel-card-top"><span class="pill accent">ABREVIATURA</span></div>
+        <h3>${esc(abbr)}</h3>
+        <p class="definition">${esc(definition)}</p>
+      </article>`).join('');
+    $('#hotelAbbrEmpty').classList.toggle('hidden', items.length !== 0);
   }
 
-  function buildMcqQuestions() {
-    const questionPool = [];
-    alphabet.forEach(([letter, word]) => {
-      const distractors = shuffle(alphabet.filter(([l]) => l !== letter)).slice(0, 3).map(([, w]) => w);
-      questionPool.push({
-        type: 'mcq',
-        prompt: `¿Qué palabra representa la letra “${letter}”?`,
-        answer: word,
-        options: shuffle([word, ...distractors]),
-        speech: `La letra ${letter}`
-      });
-    });
-    hotelAbbreviations.slice(0, 10).forEach(([abbr, code, definition]) => {
-      const distractors = shuffle(hotelAbbreviations.filter(([a]) => a !== abbr)).slice(0, 3).map(([, , d]) => d);
-      questionPool.push({
-        type: 'mcq',
-        prompt: `¿Qué significa “${abbr}”?`,
-        answer: definition,
-        options: shuffle([definition, ...distractors]),
-        speech: abbr
-      });
-    });
-    return shuffle(questionPool).slice(0, 10);
+  function buildPairDataset(topic) {
+    if (topic === 'alphabet') return alphabet.map(([a, b]) => ({ left: a, right: b, leftLabel: 'LETRA', rightLabel: 'CÓDIGO', voice: 'en-US' }));
+    if (topic === 'cities') return cities.map(([a, b]) => ({ left: a, right: b, leftLabel: 'CLAVE', rightLabel: 'CIUDAD', voice: 'es-MX' }));
+    if (topic === 'hotelTerms') return hotelTerms.map(([a, b]) => ({ left: a, right: b, leftLabel: 'TÉRMINO', rightLabel: 'SIGNIFICADO', voice: 'en-US' }));
+    return hotelAbbreviations.map(([a, b]) => ({ left: a, right: b, leftLabel: 'ABREVIATURA', rightLabel: 'SIGNIFICADO', voice: 'es-MX' }));
   }
 
-  function wordToCode(word) {
-    return [...normalizeText(word)].map((letter) => {
-      const entry = alphabet.find(([l]) => l === letter);
-      return entry ? entry[1] : '';
-    }).filter(Boolean);
+  function topicTitle(topic) {
+    return ({ alphabet: 'Abecedario aeronáutico', cities: 'Claves de ciudades', hotelTerms: 'Terminología hotelera', hotelAbbr: 'Abreviaturas hoteleras' })[topic];
   }
 
-  function buildDecodeQuestions() {
-    const words = ['HOTEL', 'CAMPECHE', 'TURISMO', 'VIAJE', 'AVION', 'LIMA', 'DELTA', 'PAPA', 'MEXICO', 'PLAYA'];
-    return shuffle(words).slice(0, 10).map((word) => ({
-      type: 'decode',
-      prompt: '¿Qué palabra se forma?',
-      answer: word,
-      code: wordToCode(word)
-    }));
+  function makeQuestion(topic) {
+    const data = buildPairDataset(topic);
+    const item = randomItem(data);
+    const direction = Math.random() > 0.5 ? 'leftToRight' : 'rightToLeft';
+    const prompt = direction === 'leftToRight'
+      ? `¿Qué corresponde a “${item.left}”?`
+      : `¿Qué corresponde a “${item.right}”?`;
+    const correct = direction === 'leftToRight' ? item.right : item.left;
+    const wrongs = shuffle(data.filter(d => d !== item).map(d => direction === 'leftToRight' ? d.right : d.left)).slice(0, 3);
+    return { type: 'mcq', topic, prompt, answer: correct, options: shuffle([correct, ...wrongs]), speech: direction === 'leftToRight' ? item.left : item.right };
   }
 
-  function buildListenQuestions() {
-    const words = ['HOTEL', 'CAMPECHE', 'TURISMO', 'VIAJE', 'AVION', 'LIMA', 'DELTA', 'PAPA', 'MEXICO', 'PLAYA'];
-    return shuffle(words).slice(0, 10).map((word) => ({ type: 'listen', answer: word, code: wordToCode(word) }));
-  }
-
-  function startGame(mode) {
-    clearInterval(state.gameTimer);
-    state.gameMode = mode;
-    state.gameIndex = 0;
-    state.gameScore = 0;
-    state.gameTime = 30;
-    state.speedTotal = mode === 'speed' ? 10 : 10;
-    state.gameQuestions = mode === 'mcq'
-      ? buildMcqQuestions()
-      : mode === 'decode'
-        ? buildDecodeQuestions()
-        : mode === 'listen'
-          ? buildListenQuestions()
-          : buildMcqQuestions();
-
-    $('#practiceSelector').classList.add('hidden');
-    $('#practiceGame').classList.remove('hidden');
-    $('#gameProgress').textContent = `1 / ${state.gameQuestions.length}`;
-    renderCurrentQuestion();
-
-    if (mode === 'speed') {
-      state.gameTime = 30;
-      $('#gameProgress').textContent = `⏱ ${state.gameTime}s`;
-      state.gameTimer = setInterval(() => {
-        state.gameTime -= 1;
-        $('#gameProgress').textContent = `⏱ ${state.gameTime}s`;
-        if (state.gameTime <= 0) finishGame();
-      }, 1000);
+  function makeTextQuestion(topic) {
+    const data = buildPairDataset(topic);
+    const item = randomItem(data);
+    let prompt, answer;
+    if (topic === 'alphabet') {
+      prompt = `Escribe la palabra que forman: ${item.left ? item.right : ''}`;
+      answer = item.left;
+    } else if (topic === 'cities') {
+      prompt = `Escribe la clave de: ${item.right}`;
+      answer = item.left;
+    } else if (topic === 'hotelTerms') {
+      prompt = `Escribe el término en inglés que corresponde a: ${item.right}`;
+      answer = item.left;
+    } else {
+      prompt = `Escribe la abreviatura que corresponde a: ${item.right}`;
+      answer = item.left;
     }
+    return { type: 'text', topic, prompt, answer, item };
   }
 
-  function renderCurrentQuestion() {
-    const q = state.gameQuestions[state.gameIndex];
-    if (!q) return finishGame();
-    if (state.gameMode !== 'speed') $('#gameProgress').textContent = `${state.gameIndex + 1} / ${state.gameQuestions.length}`;
+  function makeDecodeQuestion(topic) {
+    if (topic === 'alphabet') {
+      const length = Math.random() > 0.5 ? 3 : 4;
+      const chars = shuffle(alphabet).slice(0, length);
+      return { type: 'text', topic, prompt: `Descifra el código y escribe la palabra correcta.`, answer: chars.map(c => c[0]).join(''), sequence: chars.map(c => c[1]) };
+    }
+    return makeTextQuestion(topic);
+  }
 
+  function makeEncryptQuestion(topic) {
+    const data = buildPairDataset(topic);
+    const item = randomItem(data);
+    const correct = item.right;
+    const wrongs = shuffle(data.filter(d => d !== item).map(d => d.right)).slice(0, 3);
+    return { type: 'mcq', topic, prompt: `¿Cuál opción corresponde a “${item.left}”?`, answer: correct, options: shuffle([correct, ...wrongs]), speech: item.left };
+  }
+
+  function launchGame(topic, game) {
+    state.currentGame = { topic, game, score: 0, index: 0, total: game === 'memory' ? null : 10, questions: [] };
+    if (game === 'memory') openMemoryGame(topic);
+    else openQuestionGame(topic, game);
+  }
+
+  function openQuestionGame(topic, game) {
+    state.currentGame.questions = Array.from({ length: 10 }, () => game === 'questions' ? makeQuestion(topic) : game === 'decode' ? makeDecodeQuestion(topic) : makeEncryptQuestion(topic));
+    const root = $('#modalRoot');
+    root.classList.remove('hidden');
+    root.setAttribute('aria-hidden', 'false');
+    root.innerHTML = `
+      <div class="modal-backdrop"></div>
+      <div class="game-modal glass">
+        <div class="modal-head"><div><span class="eyebrow">${esc(topicTitle(topic))}</span><h3>${game === 'questions' ? 'Juego de preguntas' : game === 'decode' ? (topic === 'alphabet' ? 'Descifra el código' : 'Escribe la respuesta') : 'Encripta y elige'}</h3></div><button class="icon-btn" data-close-modal type="button" aria-label="Cerrar">✕</button></div>
+        <div id="modalGameContent"></div>
+      </div>`;
+    renderQuestionGame();
+  }
+
+  function renderQuestionGame() {
+    const g = state.currentGame;
+    const q = g.questions[g.index];
+    if (!q) return finishQuestionGame();
+    const content = $('#modalGameContent');
+    const title = g.game === 'questions' ? 'PREGUNTA' : g.game === 'decode' ? 'DESCIFRA' : 'ENCRIPTA';
+    let html = `<div class="game-status"><span>${title}</span><strong>${g.index + 1} / ${g.total}</strong></div>`;
+    html += `<div class="game-question"><p class="eyebrow">${esc(topicTitle(q.topic))}</p><h2>${esc(q.prompt)}</h2>`;
+    if (q.speech && g.topic === 'hotelTerms') html += `<button class="btn btn-secondary audio-inline" data-game-speak-en="${esc(q.speech)}" type="button">🔊 Escuchar término en inglés</button>`;
+    if (q.speech && g.topic === 'alphabet' && g.game === 'questions') html += `<button class="btn btn-secondary audio-inline" data-game-speak-en="${esc(q.speech)}" type="button">🔊 Escuchar</button>`;
+    if (q.sequence) html += `<div class="sequence-box glass">${q.sequence.map((term, i) => `<button class="sequence-term" data-game-speak-en="${esc(term)}" type="button">${esc(term)}${i < q.sequence.length - 1 ? ' ·' : ''}</button>`).join('')}</div><button class="btn btn-secondary audio-inline" data-play-sequence="1" type="button">🔊 Escuchar secuencia</button>`;
     if (q.type === 'mcq') {
-      $('#gameContent').innerHTML = `
-        <div class="question-card">
-          <span class="eyebrow">PREGUNTA ${state.gameIndex + 1}</span>
-          <h2>${q.prompt}</h2>
-          <button class="audio-question glass" data-q-speak="${q.speech}" type="button">🔊 Escuchar pregunta</button>
-          <div class="answers-grid">${q.options.map((option) => `<button class="answer-btn glass" data-answer="${encodeURIComponent(option)}" type="button">${option}</button>`).join('')}</div>
-          <div id="questionFeedback" class="feedback"></div>
-        </div>`;
+      html += `<div class="answers-grid">${q.options.map(o => `<button class="answer-btn glass" data-game-answer="${esc(o)}" type="button">${esc(o)}</button>`).join('')}</div>`;
     } else {
-      $('#gameContent').innerHTML = `
-        <div class="question-card">
-          <span class="eyebrow">${q.type === 'listen' ? 'ESCUCHA' : 'DESCIFRA'}</span>
-          <h2>${q.prompt}</h2>
-          <div class="code-display glass">${q.code.map((term, index) => `<button class="code-chip" data-code-speak="${term}" type="button">${term}${index < q.code.length - 1 ? ' ·' : ''}</button>`).join('')}</div>
-          <button id="playSequence" class="btn btn-primary big-audio" type="button">🔊 Escuchar código completo</button>
-          <div class="guess-row"><input id="guessInput" class="text-input" type="text" placeholder="Escribe la palabra..." autocomplete="off" /><button id="submitGuess" class="btn btn-secondary" type="button">Comprobar</button></div>
-          <div id="questionFeedback" class="feedback"></div>
-        </div>`;
-      if (q.type === 'listen') setTimeout(() => speakCodeSequence(q.code), 350);
+      html += `<div class="guess-row"><input id="gameInput" class="text-input" type="text" placeholder="Escribe tu respuesta..." autocomplete="off" /><button class="btn btn-primary" data-submit-game type="button">Comprobar</button></div>`;
+    }
+    html += `<div id="gameFeedback" class="feedback"></div></div>`;
+    content.innerHTML = html;
+  }
+
+  function gradeGame(answer) {
+    const g = state.currentGame;
+    const q = g.questions[g.index];
+    const correct = normalize(answer) === normalize(q.answer);
+    if (correct) g.score += 1;
+    $('#gameFeedback').className = `feedback ${correct ? 'correct' : 'incorrect'}`;
+    $('#gameFeedback').textContent = correct ? '✓ ¡Correcto!' : `✕ La respuesta correcta era: ${q.answer}`;
+    $$('.answer-btn').forEach(b => b.disabled = true);
+    const input = $('#gameInput');
+    if (input) input.disabled = true;
+    const submit = $('[data-submit-game]');
+    if (submit) submit.disabled = true;
+    setTimeout(() => { g.index += 1; renderQuestionGame(); }, 750);
+  }
+
+  function finishQuestionGame() {
+    const g = state.currentGame;
+    const pct = Math.round((g.score / g.total) * 100);
+    $('#modalGameContent').innerHTML = `
+      <div class="result-card compact-result"><div class="result-emoji">${pct >= 80 ? '🏆' : pct >= 60 ? '✨' : '💪'}</div><span class="eyebrow">RESULTADO</span><h2>${g.score} / ${g.total}</h2><div class="result-percent">${pct}%</div><p>${pct >= 80 ? '¡Excelente trabajo!' : pct >= 60 ? '¡Vas por buen camino!' : 'Repásalo y vuelve a intentarlo.'}</p><div class="hero-actions center"><button class="btn btn-primary" data-retry-game type="button">Intentar de nuevo</button><button class="btn btn-secondary" data-close-modal type="button">Cerrar</button></div></div>`;
+  }
+
+  function openMemoryGame(topic) {
+    const source = buildPairDataset(topic);
+    const count = Math.min(10, source.length);
+    const chosen = shuffle(source).slice(0, count);
+    const cards = shuffle(chosen.flatMap((item, pairId) => [
+      { pairId, side: 'left', text: item.left, label: item.leftLabel },
+      { pairId, side: 'right', text: item.right, label: item.rightLabel }
+    ]));
+    state.currentGame = { topic, game: 'memory', cards, flipped: [], matched: new Set(), moves: 0 };
+    const root = $('#modalRoot');
+    root.classList.remove('hidden');
+    root.setAttribute('aria-hidden', 'false');
+    root.innerHTML = `
+      <div class="modal-backdrop"></div>
+      <div class="game-modal glass memory-modal">
+        <div class="modal-head"><div><span class="eyebrow">${esc(topicTitle(topic))}</span><h3>Memorama</h3></div><button class="icon-btn" data-close-modal type="button" aria-label="Cerrar">✕</button></div>
+        <p class="memory-help">Voltea dos tarjetas. Si pertenecen a la misma pareja, se quedan boca arriba. Si no, volverán a ocultarse.</p>
+        <div class="memory-status"><span>Movimientos: <strong id="memoryMoves">0</strong></span><span>Parejas: <strong id="memoryMatches">0</strong> / ${count}</span></div>
+        <div id="memoryGrid" class="memory-grid">${cards.map((_, i) => `<button class="memory-card" data-memory-index="${i}" type="button"><span class="memory-back">?</span><span class="memory-face"></span></button>`).join('')}</div>
+      </div>`;
+    renderMemoryCards();
+  }
+
+  function renderMemoryCards() {
+    const g = state.currentGame;
+    $$('.memory-card').forEach((card, index) => {
+      const item = g.cards[index];
+      const shown = g.flipped.includes(index) || g.matched.has(index);
+      card.classList.toggle('flipped', shown);
+      card.classList.toggle('matched', g.matched.has(index));
+      card.querySelector('.memory-face').innerHTML = shown ? `<small>${esc(item.label)}</small><strong>${esc(item.text)}</strong>` : '';
+    });
+    $('#memoryMoves').textContent = g.moves;
+    $('#memoryMatches').textContent = Math.floor(g.matched.size / 2);
+  }
+
+  async function memoryFlip(index) {
+    const g = state.currentGame;
+    if (g.flipped.length >= 2 || g.flipped.includes(index) || g.matched.has(index)) return;
+    g.flipped.push(index);
+    renderMemoryCards();
+    if (g.flipped.length < 2) return;
+    g.moves += 1;
+    const [a, b] = g.flipped;
+    if (g.cards[a].pairId === g.cards[b].pairId) {
+      g.matched.add(a); g.matched.add(b); g.flipped = [];
+      renderMemoryCards();
+      if (g.matched.size === g.cards.length) finishMemoryGame();
+    } else {
+      setTimeout(() => { g.flipped = []; renderMemoryCards(); }, 700);
     }
   }
 
-  function handleAnswer(isCorrect) {
-    const feedback = $('#questionFeedback');
-    if (isCorrect) {
-      state.gameScore += 1;
-      feedback.className = 'feedback correct';
-      feedback.textContent = '✓ ¡Correcto!';
-    } else {
-      feedback.className = 'feedback incorrect';
-      feedback.textContent = `✕ La respuesta correcta era: ${state.gameQuestions[state.gameIndex].answer}`;
+  function finishMemoryGame() {
+    const g = state.currentGame;
+    $('#memoryGrid').innerHTML = `<div class="memory-finish"><div class="result-emoji">🧠</div><h3>¡Completado!</h3><p>Encontraste todas las parejas en <strong>${g.moves}</strong> movimientos.</p><button class="btn btn-primary" data-retry-game type="button">Jugar de nuevo</button></div>`;
+  }
+
+  function resetExamSetup() {
+    if (state.currentView !== 'examen') return;
+    $('#examSetup').classList.remove('hidden');
+    $('#examRunner').classList.add('hidden');
+    $('#examResult').classList.add('hidden');
+    $('#examResult').innerHTML = '';
+  }
+
+  function buildExamQuestions(topic) {
+    const data = buildPairDataset(topic);
+    const questions = [];
+    const count = topic === 'hotelAbbr' ? Math.min(10, data.length) : Math.min(10, data.length);
+    const pool = shuffle(data).slice(0, count);
+    pool.forEach(item => {
+      const firstDirection = Math.random() > 0.5;
+      const correct = firstDirection ? item.right : item.left;
+      const shown = firstDirection ? item.left : item.right;
+      const wrongs = shuffle(data.filter(d => d !== item).map(d => firstDirection ? d.right : d.left)).slice(0, 3);
+      questions.push({ prompt: firstDirection ? `¿Qué corresponde a “${shown}”?` : `¿Qué corresponde a “${shown}”?`, answer: correct, options: shuffle([correct, ...wrongs]), shown });
+    });
+    return questions;
+  }
+
+  function startExam() {
+    const selected = $$('input[type="checkbox"]:checked', $('#examSetup')).map(i => i.value);
+    if (!selected.length) {
+      alert('Selecciona al menos un tema para comenzar.');
+      return;
     }
-    $$('.answer-btn').forEach((button) => button.disabled = true);
-    setTimeout(nextQuestion, 850);
+    state.exam.sections = selected.map(topic => ({ topic, title: topicTitle(topic), questions: buildExamQuestions(topic) }));
+    state.exam.sectionIndex = 0;
+    state.exam.questionIndex = 0;
+    state.exam.answers = [];
+    state.exam.sectionResults = [];
+    $('#examSetup').classList.add('hidden');
+    $('#examRunner').classList.remove('hidden');
+    renderExamQuestion();
   }
 
-  function nextQuestion() {
-    state.gameIndex += 1;
-    if (state.gameIndex >= state.gameQuestions.length || (state.gameMode === 'speed' && state.gameTime <= 0)) finishGame();
-    else renderCurrentQuestion();
-  }
-
-  function finishGame() {
-    clearInterval(state.gameTimer);
-    state.gameTimer = null;
-    const total = state.gameQuestions.length;
-    const score = state.gameScore;
-    const percentage = total ? Math.round((score / total) * 100) : 0;
-    const message = percentage >= 80 ? '¡Vas muy bien!' : percentage >= 50 ? '¡Buen trabajo, sigue practicando!' : 'Cada intento ayuda. ¡Vamos otra vez!';
-    $('#gameProgress').textContent = '✓ Terminado';
-    $('#gameContent').innerHTML = `
-      <div class="result-card">
-        <div class="result-emoji">${percentage >= 80 ? '🏆' : percentage >= 50 ? '✨' : '💪'}</div>
-        <span class="eyebrow">RESULTADO</span>
-        <h2>${score} / ${total} correctas</h2>
-        <div class="result-percent">${percentage}%</div>
-        <p>${message}</p>
-        <div class="hero-actions center"><button id="retryGame" class="btn btn-primary">Intentar de nuevo</button><button id="backToPractice" class="btn btn-secondary">Elegir otro modo</button></div>
+  function renderExamQuestion() {
+    const e = state.exam;
+    if (e.sectionIndex >= e.sections.length) return finishExam();
+    const section = e.sections[e.sectionIndex];
+    const q = section.questions[e.questionIndex];
+    $('#examSectionLabel').textContent = `SECCIÓN ${e.sectionIndex + 1} DE ${e.sections.length}`;
+    $('#examSectionTitle').textContent = section.title;
+    $('#examProgress').textContent = `${e.questionIndex + 1} / ${section.questions.length}`;
+    $('#examProgressBar').style.width = `${((e.questionIndex + 1) / section.questions.length) * 100}%`;
+    $('#examQuestion').innerHTML = `
+      <div class="exam-question-card">
+        <span class="eyebrow">PREGUNTA ${e.questionIndex + 1}</span>
+        <h2>${esc(q.prompt)}</h2>
+        <div class="answers-grid">${q.options.map(o => `<button class="answer-btn glass" data-exam-answer="${esc(o)}" type="button">${esc(o)}</button>`).join('')}</div>
+        <div id="examFeedback" class="feedback"></div>
       </div>`;
   }
 
-  function exitGame() {
-    clearInterval(state.gameTimer);
-    state.gameTimer = null;
-    $('#practiceGame').classList.add('hidden');
-    $('#practiceSelector').classList.remove('hidden');
+  function gradeExam(answer) {
+    const e = state.exam;
+    const section = e.sections[e.sectionIndex];
+    const q = section.questions[e.questionIndex];
+    const correct = normalize(answer) === normalize(q.answer);
+    e.answers.push({ section: section.title, question: q.prompt, selected: answer, correctAnswer: q.answer, correct });
+    const feedback = $('#examFeedback');
+    feedback.className = `feedback ${correct ? 'correct' : 'incorrect'}`;
+    feedback.textContent = correct ? '✓ ¡Correcto!' : `✕ La respuesta correcta era: ${q.answer}`;
+    $$('.answer-btn').forEach(b => b.disabled = true);
+    setTimeout(() => {
+      e.questionIndex += 1;
+      if (e.questionIndex >= section.questions.length) {
+        const sectionAnswers = e.answers.filter(a => a.section === section.title);
+        e.sectionResults.push({ topic: section.topic, title: section.title, correct: sectionAnswers.filter(a => a.correct).length, total: section.questions.length, answers: sectionAnswers });
+        e.sectionIndex += 1;
+        e.questionIndex = 0;
+      }
+      renderExamQuestion();
+    }, 700);
   }
 
-  function speakCodeSequence(code) {
-    if (!state.soundEnabled) return;
-    const text = code.join(' — ');
-    speak(text, { rate: state.speechRate });
+  function finishExam() {
+    const total = state.exam.answers.length;
+    const correct = state.exam.answers.filter(a => a.correct).length;
+    const overall = total ? Math.round((correct / total) * 100) : 0;
+    $('#examRunner').classList.add('hidden');
+    $('#examResult').classList.remove('hidden');
+    $('#examResult').innerHTML = `
+      <div class="glass result-card exam-results">
+        <div class="result-emoji">${overall >= 80 ? '🏆' : overall >= 60 ? '✨' : '📚'}</div>
+        <span class="eyebrow">EXAMEN TERMINADO</span>
+        <h2>Promedio general</h2>
+        <div class="result-percent">${overall}%</div>
+        <p>${correct} respuestas correctas de ${total}.</p>
+        <div class="section-results">${state.exam.sectionResults.map((r, i) => {
+          const pct = Math.round((r.correct / r.total) * 100);
+          return `<details class="result-section"><summary><span><strong>Sección ${i + 1}: ${esc(r.title)}</strong><small>${r.correct} / ${r.total} · ${pct}%</small></span><span>⌄</span></summary><div class="review-list">${r.answers.map((a, idx) => `<article class="review-item ${a.correct ? 'is-correct' : 'is-wrong'}"><div><span class="review-number">${idx + 1}</span><div><strong>${esc(a.question)}</strong><p>Tu respuesta: <span>${esc(a.selected)}</span>${a.correct ? '' : `<br>Respuesta correcta: <span class="correct-answer">${esc(a.correctAnswer)}</span>`}</p></div></div><span>${a.correct ? '✓' : '✕'}</span></article>`).join('')}</div></details>`;
+        }).join('')}</div>
+        <button id="newExam" class="btn btn-primary" type="button">Nuevo examen</button>
+      </div>`;
+  }
+
+  function closeModal() {
+    const root = $('#modalRoot');
+    root.classList.add('hidden');
+    root.setAttribute('aria-hidden', 'true');
+    root.innerHTML = '';
+    state.currentGame = null;
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   }
 
   function initEvents() {
-    document.addEventListener('click', (event) => {
-      const navTarget = event.target.closest('[data-nav]');
-      if (navTarget) {
-        navigate(navTarget.dataset.nav);
-        return;
-      }
+    document.addEventListener('click', e => {
+      const nav = e.target.closest('[data-nav]');
+      if (nav) return navigate(nav.dataset.nav);
 
-      const practiceLink = event.target.closest('[data-practice-mode]');
-      if (practiceLink) {
-        navigate('practica');
-        startGame(practiceLink.dataset.practiceMode);
-        return;
-      }
-
-      const aeroTab = event.target.closest('[data-aero-tab]');
+      const aeroTab = e.target.closest('[data-aero-tab]');
       if (aeroTab) {
-        state.currentAeroTab = aeroTab.dataset.aeroTab;
-        $$('.tab-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.aeroTab === state.currentAeroTab));
-        $$('.aero-panel').forEach((panel) => panel.classList.add('hidden'));
-        $(`#aero-${state.currentAeroTab}`).classList.remove('hidden');
+        state.aeroTab = aeroTab.dataset.aeroTab;
+        $$('[data-aero-tab]').forEach(b => b.classList.toggle('active', b === aeroTab));
+        $('#aero-alphabet').classList.toggle('hidden', state.aeroTab !== 'alphabet');
+        $('#aero-cities').classList.toggle('hidden', state.aeroTab !== 'cities');
         return;
       }
 
-      const card = event.target.closest('[data-card-index]');
+      const hotelTab = e.target.closest('[data-hotel-tab]');
+      if (hotelTab) {
+        state.hotelTab = hotelTab.dataset.hotelTab;
+        $$('[data-hotel-tab]').forEach(b => b.classList.toggle('active', b === hotelTab));
+        $('#hotel-terms').classList.toggle('hidden', state.hotelTab !== 'terms');
+        $('#hotel-abbr').classList.toggle('hidden', state.hotelTab !== 'abbr');
+        return;
+      }
+
+      const card = e.target.closest('[data-card-index]');
       if (card) {
         state.currentCard = Number(card.dataset.cardIndex);
-        renderFlashcard();
-        renderAlphabetGrid();
-        speak(alphabet[state.currentCard][1]);
+        renderFlashcard(); renderAlphabetGrid();
         return;
       }
 
-      const city = event.target.closest('[data-city]');
-      if (city) {
-        speak(`${city.dataset.city}`);
+      const speakEn = e.target.closest('[data-speak-en]');
+      if (speakEn) return speakEnglish(speakEn.dataset.speakEn);
+
+      const game = e.target.closest('[data-game-topic]');
+      if (game) return launchGame(game.dataset.gameTopic, game.dataset.game);
+
+      if (e.target.closest('[data-close-modal]') || e.target.classList.contains('modal-backdrop')) return closeModal();
+
+      const ans = e.target.closest('[data-game-answer]');
+      if (ans) return gradeGame(ans.dataset.gameAnswer);
+
+      const examAns = e.target.closest('[data-exam-answer]');
+      if (examAns) return gradeExam(examAns.dataset.examAnswer);
+
+      const speakGame = e.target.closest('[data-game-speak-en]');
+      if (speakGame) return speakEnglish(speakGame.dataset.gameSpeakEn);
+
+      if (e.target.closest('[data-play-sequence]')) {
+        const q = state.currentGame.questions[state.currentGame.index];
+        return speakSequence(q.sequence, 'en-US');
+      }
+
+      if (e.target.closest('[data-submit-game]')) {
+        const input = $('#gameInput');
+        if (input?.value.trim()) return gradeGame(input.value.trim());
         return;
       }
 
-      const converterItem = event.target.closest('[data-word]');
-      if (converterItem) {
-        speak(converterItem.dataset.word);
-        return;
+      if (e.target.closest('[data-retry-game]')) {
+        const g = state.currentGame;
+        return launchGame(g.topic, g.game);
       }
 
-      const speakBtn = event.target.closest('[data-speak]');
-      if (speakBtn) {
-        speak(speakBtn.dataset.speak);
-        return;
-      }
+      if (e.target.closest('[data-new-exam]')) return resetExamSetup();
 
-      const codeSpeak = event.target.closest('[data-code-speak]');
-      if (codeSpeak) {
-        speak(codeSpeak.dataset.codeSpeak);
-        return;
-      }
-
-      const mode = event.target.closest('[data-mode]');
-      if (mode) {
-        startGame(mode.dataset.mode);
-        return;
-      }
-
-      const answer = event.target.closest('[data-answer]');
-      if (answer) {
-        const option = decodeURIComponent(answer.dataset.answer);
-        const correct = option === state.gameQuestions[state.gameIndex].answer;
-        handleAnswer(correct);
-        return;
-      }
+      const memoryCard = e.target.closest('[data-memory-index]');
+      if (memoryCard) return memoryFlip(Number(memoryCard.dataset.memoryIndex));
     });
 
-    $('#prevCard').addEventListener('click', () => {
-      state.currentCard = (state.currentCard - 1 + alphabet.length) % alphabet.length;
-      renderFlashcard();
-      renderAlphabetGrid();
-    });
-    $('#nextCard').addEventListener('click', () => {
-      state.currentCard = (state.currentCard + 1) % alphabet.length;
-      renderFlashcard();
-      renderAlphabetGrid();
-    });
-    $('#flashcardSpeak').addEventListener('click', () => speak(alphabet[state.currentCard][1]));
+    $('#prevCard').addEventListener('click', () => { state.currentCard = (state.currentCard - 1 + alphabet.length) % alphabet.length; renderFlashcard(); renderAlphabetGrid(); });
+    $('#nextCard').addEventListener('click', () => { state.currentCard = (state.currentCard + 1) % alphabet.length; renderFlashcard(); renderAlphabetGrid(); });
+    $('#flashcardSpeak').addEventListener('click', () => speakEnglish(alphabet[state.currentCard][1]));
 
-    $('#converterInput').addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') renderConverter();
-    });
+    $('#converterInput').addEventListener('keydown', e => { if (e.key === 'Enter') renderConverter(); });
     $('#convertBtn').addEventListener('click', renderConverter);
-    $('#converterSpeakAll').addEventListener('click', (event) => speak(event.currentTarget.dataset.text || ''));
-
-    $$('.speed-btn').forEach((btn) => btn.addEventListener('click', () => {
-      state.speechRate = Number(btn.dataset.rate);
-      $$('.speed-btn').forEach((item) => item.classList.toggle('active', item === btn));
-    }));
-
-    $('#citySearch').addEventListener('input', (event) => renderCities(event.target.value));
-    $('#hotelSearch').addEventListener('input', renderHotelCards);
-    $$('.filter-btn').forEach((btn) => btn.addEventListener('click', () => {
-      state.hotelFilter = btn.dataset.hotelFilter;
-      $$('.filter-btn').forEach((item) => item.classList.toggle('active', item === btn));
-      renderHotelCards();
-    }));
-
-    $('#soundToggle').addEventListener('click', () => {
-      state.soundEnabled = !state.soundEnabled;
-      $('#soundToggle').textContent = state.soundEnabled ? '🔊' : '🔇';
-    });
-
-    $('#exitGame').addEventListener('click', exitGame);
-
-    $('#gameContent').addEventListener('click', (event) => {
-      const speakQuestion = event.target.closest('[data-q-speak]');
-      if (speakQuestion) speak(speakQuestion.dataset.qSpeak);
-
-      if (event.target.id === 'playSequence') {
-        speakCodeSequence(state.gameQuestions[state.gameIndex].code);
-      }
-
-      if (event.target.id === 'submitGuess') {
-        const input = $('#guessInput');
-        const answer = state.gameQuestions[state.gameIndex].answer;
-        const correct = normalizeText(input.value) === normalizeText(answer);
-        const feedback = $('#questionFeedback');
-        feedback.className = `feedback ${correct ? 'correct' : 'incorrect'}`;
-        feedback.textContent = correct ? '✓ ¡Correcto!' : `✕ La respuesta correcta era: ${answer}`;
-        input.disabled = true;
-        event.target.disabled = true;
-        if (correct) state.gameScore += 1;
-        setTimeout(nextQuestion, 900);
-      }
-
-      if (event.target.id === 'retryGame') startGame(state.gameMode);
-      if (event.target.id === 'backToPractice') exitGame();
-    });
-
-    $('#gameContent').addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' && event.target.id === 'guessInput') $('#submitGuess')?.click();
-    });
+    $('#converterSpeakAll').addEventListener('click', e => speakSequence((e.currentTarget.dataset.text || '').split(' — '), 'en-US'));
+    $$('.speed-btn').forEach(btn => btn.addEventListener('click', () => { state.speechRate = Number(btn.dataset.rate); $$('.speed-btn').forEach(b => b.classList.toggle('active', b === btn)); }));
+    $('#citySearch').addEventListener('input', e => renderCities(e.target.value));
+    $('#hotelTermSearch').addEventListener('input', renderHotelTerms);
+    $('#hotelAbbrSearch').addEventListener('input', renderHotelAbbr);
+    $('#soundToggle').addEventListener('click', () => { state.soundEnabled = !state.soundEnabled; $('#soundToggle').textContent = state.soundEnabled ? '🔊' : '🔇'; if (!state.soundEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel(); });
+    $('#startExam').addEventListener('click', startExam);
+    $('#examQuestion').addEventListener('keydown', e => { if (e.key === 'Enter') $('[data-exam-answer]')?.focus(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modalRoot').classList.contains('hidden')) closeModal(); });
   }
 
   function init() {
-    renderAlphabetGrid();
-    renderFlashcard();
-    renderCities();
-    renderHotelCards();
-    initEvents();
+    renderAlphabetGrid(); renderFlashcard(); renderCities(); renderHotelTerms(); renderHotelAbbr(); initEvents();
     if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
   }
 
