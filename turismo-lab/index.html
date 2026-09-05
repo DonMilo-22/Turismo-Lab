@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0c1222" />
+  <meta name="description" content="Turismo Lab — aprende terminología aeronáutica y hotelera de forma sencilla, visual e interactiva." />
+  <title>Turismo Lab · Aprende, practica, explora</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <div class="ambient ambient-three"></div>
+
+  <header class="topbar glass">
+    <a class="brand" href="#inicio" data-nav="inicio" aria-label="Ir a inicio">
+      <span class="brand-mark">✈</span>
+      <span>
+        <strong>Turismo Lab</strong>
+        <small>Aprende · Practica · Explora</small>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Navegación principal">
+      <button class="nav-link active" data-nav="inicio">Inicio</button>
+      <button class="nav-link" data-nav="aero">✈ Aeronáutico</button>
+      <button class="nav-link" data-nav="hotel">🏨 Hotelería</button>
+      <button class="nav-link" data-nav="practica">🎮 Práctica</button>
+    </nav>
+
+    <button id="soundToggle" class="icon-btn" type="button" aria-label="Activar o desactivar sonidos" title="Sonido">
+      🔊
+    </button>
+  </header>
+
+  <main class="app-shell">
+    <section id="inicio" class="view active-view">
+      <div class="hero glass">
+        <div class="hero-copy">
+          <span class="eyebrow">PLATAFORMA DE ESTUDIO</span>
+          <h1>Aprende turismo de una forma más <span class="gradient-text">simple y divertida.</span></h1>
+          <p>Una pequeña herramienta para estudiar el abecedario aeronáutico, claves de ciudades y terminología hotelera sin cuentas, sin complicaciones y desde cualquier dispositivo.</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" data-nav="aero">Empezar con aeronáutico</button>
+            <button class="btn btn-secondary" data-nav="hotel">Explorar hotelería</button>
+          </div>
+        </div>
+        <div class="hero-orbit" aria-hidden="true">
+          <div class="orbit-ring ring-one"></div>
+          <div class="orbit-ring ring-two"></div>
+          <div class="orbit-core">✈</div>
+          <span class="orbit-dot dot-a">A</span>
+          <span class="orbit-dot dot-h">H</span>
+          <span class="orbit-dot dot-t">T</span>
+          <span class="orbit-dot dot-v">V</span>
+        </div>
+      </div>
+
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">ELIGE TU RUTA</span>
+          <h2>¿Qué quieres estudiar?</h2>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card glass clickable-card" data-nav="aero">
+          <div class="feature-icon blue">✈</div>
+          <div>
+            <span class="card-kicker">MÓDULO 01</span>
+            <h3>Abecedario aeronáutico</h3>
+            <p>Aprende las 26 letras, escucha su pronunciación, descifra palabras y practica con retos.</p>
+            <span class="text-link">Ir al módulo →</span>
+          </div>
+        </article>
+
+        <article class="feature-card glass clickable-card" data-nav="hotel">
+          <div class="feature-icon violet">🏨</div>
+          <div>
+            <span class="card-kicker">MÓDULO 02</span>
+            <h3>Terminología hotelera</h3>
+            <p>Explora términos, abreviaturas y situaciones comunes del sector hotelero.</p>
+            <span class="text-link">Ir al módulo →</span>
+          </div>
+        </article>
+
+        <article class="feature-card glass clickable-card" data-nav="practica">
+          <div class="feature-icon mint">🎮</div>
+          <div>
+            <span class="card-kicker">MÓDULO 03</span>
+            <h3>Centro de práctica</h3>
+            <p>Combina distintos ejercicios para comprobar qué tanto recuerdas de forma rápida.</p>
+            <span class="text-link">Empezar a practicar →</span>
+          </div>
+        </article>
+      </div>
+
+      <div class="mini-note glass">
+        <span>💡</span>
+        <p><strong>Sin cuentas. Sin progreso. Sin presión.</strong> Turismo Lab está pensado para entrar, estudiar lo necesario, practicar y salir.</p>
+      </div>
+    </section>
+
+    <section id="aero" class="view">
+      <div class="page-header">
+        <div>
+          <button class="back-link" data-nav="inicio">← Volver al inicio</button>
+          <span class="eyebrow">MÓDULO AERONÁUTICO</span>
+          <h2>Abecedario &amp; claves</h2>
+          <p>Aprende los códigos del material de estudio y ponlos en práctica con audio.</p>
+        </div>
+        <div class="stat-chip glass"><strong id="aeroCardIndex">1</strong><span>/ 26 letras</span></div>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" data-aero-tab="study">📚 Estudiar</button>
+        <button class="tab-btn" data-aero-tab="converter">🔄 Convertidor</button>
+        <button class="tab-btn" data-aero-tab="cities">🗺 Claves de ciudades</button>
+      </div>
+
+      <div id="aero-study" class="aero-panel">
+        <div class="study-layout">
+          <div class="flashcard glass">
+            <div class="flashcard-top"><span id="flashcardLetterMini">A</span><span id="flashcardCount">1 / 26</span></div>
+            <div class="flashcard-letter" id="flashcardLetter">A</div>
+            <div class="flashcard-word" id="flashcardWord">ALFA</div>
+            <p class="flashcard-hint">Código fonético</p>
+            <button id="flashcardSpeak" class="btn btn-primary big-audio" type="button">🔊 Escuchar “ALFA”</button>
+            <div class="flashcard-nav">
+              <button id="prevCard" class="btn btn-secondary" type="button">← Anterior</button>
+              <button id="nextCard" class="btn btn-secondary" type="button">Siguiente →</button>
+            </div>
+          </div>
+
+          <aside class="study-side">
+            <div class="glass side-card">
+              <div class="side-card-title"><span>🧠</span><div><strong>Modo estudio</strong><small>Recorre las letras a tu ritmo</small></div></div>
+              <ul class="clean-list">
+                <li>Escucha cada término.</li>
+                <li>Intenta decirlo antes del audio.</li>
+                <li>Usa el convertidor para practicar palabras.</li>
+              </ul>
+            </div>
+            <button class="glass mini-action" data-practice-mode="listen">🎧 Ir a reto de escucha <span>→</span></button>
+            <button class="glass mini-action" data-practice-mode="decode">🧩 Ir a descifrar códigos <span>→</span></button>
+          </aside>
+        </div>
+
+        <div class="section-heading compact">
+          <div>
+            <span class="eyebrow">CONSULTA RÁPIDA</span>
+            <h3>Las 26 letras</h3>
+          </div>
+        </div>
+        <div id="alphabetGrid" class="alphabet-grid"></div>
+      </div>
+
+      <div id="aero-converter" class="aero-panel hidden">
+        <div class="converter-layout">
+          <div class="glass converter-card">
+            <span class="eyebrow">CONVERTIDOR</span>
+            <h3>Escribe una palabra</h3>
+            <p>Turismo Lab convertirá cada letra usando el abecedario del material de estudio.</p>
+            <label class="field-label" for="converterInput">Palabra</label>
+            <div class="input-row">
+              <input id="converterInput" class="text-input" type="text" maxlength="40" placeholder="Ej. HOTEL" autocomplete="off" />
+              <button id="convertBtn" class="btn btn-primary" type="button">Convertir</button>
+            </div>
+            <div class="speed-row">
+              <span>Velocidad de audio</span>
+              <button class="speed-btn" data-rate="0.75">0.75×</button>
+              <button class="speed-btn active" data-rate="1">1×</button>
+              <button class="speed-btn" data-rate="1.25">1.25×</button>
+            </div>
+          </div>
+          <div class="glass converter-result">
+            <div class="result-head"><div><span class="eyebrow">RESULTADO</span><h3 id="converterTitle">Escribe algo arriba</h3></div><button id="converterSpeakAll" class="icon-btn" type="button" title="Escuchar todo" disabled>🔊</button></div>
+            <div id="converterList" class="converter-list empty-state"><span>✦</span><p>Aquí aparecerá la conversión letra por letra.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="aero-cities" class="aero-panel hidden">
+        <div class="glass table-card">
+          <div class="table-toolbar">
+            <div><span class="eyebrow">CLAVES DE CIUDADES</span><h3>Consulta las claves del material</h3></div>
+            <input id="citySearch" class="text-input compact-input" type="search" placeholder="Buscar ciudad o clave..." />
+          </div>
+          <div id="citiesGrid" class="cities-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="hotel" class="view">
+      <div class="page-header">
+        <div>
+          <button class="back-link" data-nav="inicio">← Volver al inicio</button>
+          <span class="eyebrow">MÓDULO HOTELERÍA</span>
+          <h2>Habla como profesional</h2>
+          <p>Consulta términos, abreviaturas y ejemplos de uso para entender mejor el lenguaje del sector.</p>
+        </div>
+      </div>
+
+      <div class="hotel-controls glass">
+        <div class="hotel-search-wrap"><span>🔎</span><input id="hotelSearch" class="search-input" type="search" placeholder="Busca un término, abreviatura o definición..." /></div>
+        <div class="filter-row">
+          <button class="filter-btn active" data-hotel-filter="all">Todo</button>
+          <button class="filter-btn" data-hotel-filter="term">Terminología</button>
+          <button class="filter-btn" data-hotel-filter="abbr">Abreviaturas</button>
+        </div>
+      </div>
+
+      <div id="hotelGrid" class="hotel-grid"></div>
+      <div id="hotelEmpty" class="glass empty-panel hidden"><span>🔎</span><h3>No encontramos nada</h3><p>Prueba con otra palabra.</p></div>
+    </section>
+
+    <section id="practica" class="view">
+      <div class="page-header">
+        <div>
+          <button class="back-link" data-nav="inicio">← Volver al inicio</button>
+          <span class="eyebrow">CENTRO DE PRÁCTICA</span>
+          <h2>Aprende haciendo</h2>
+          <p>Elige un reto. Nada se guarda: solo practica y vuelve a intentarlo.</p>
+        </div>
+      </div>
+
+      <div class="practice-selector" id="practiceSelector">
+        <button class="practice-card glass" data-mode="mcq"><span class="practice-icon">🧠</span><span class="card-kicker">MODO 01</span><h3>Identifica el código</h3><p>Elige qué término corresponde a una letra o a una abreviatura.</p></button>
+        <button class="practice-card glass" data-mode="decode"><span class="practice-icon">🧩</span><span class="card-kicker">MODO 02</span><h3>Descifra el código</h3><p>Convierte una secuencia de términos aeronáuticos en una palabra.</p></button>
+        <button class="practice-card glass" data-mode="listen"><span class="practice-icon">🎧</span><span class="card-kicker">MODO 03</span><h3>Escucha y escribe</h3><p>Escucha el código y escribe la palabra que se forma.</p></button>
+        <button class="practice-card glass" data-mode="speed"><span class="practice-icon">⚡</span><span class="card-kicker">MODO 04</span><h3>Reto rápido</h3><p>Responde varias preguntas seguidas contra el reloj.</p></button>
+      </div>
+
+      <div id="practiceGame" class="glass game-shell hidden">
+        <div class="game-top"><button id="exitGame" class="back-link" type="button">← Elegir otro modo</button><div id="gameProgress" class="game-progress">1 / 10</div></div>
+        <div id="gameContent"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner"><span>✈ Turismo Lab</span><span>Hecho para estudiar turismo de forma más sencilla.</span></div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
